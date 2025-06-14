@@ -147,11 +147,11 @@
                             @foreach (var message in Model.Messages)
                             {
                                 <div class="mb-3">
-                                    @if (message.IsFromUser)
+                                    @if (message.Role == "user")
                                     {
                                         <div class="d-flex justify-content-end">
                                             <div class="bg-primary text-white rounded p-2 max-width-70">
-                                                @message.Text
+                                                @message.Message
                                             </div>
                                         </div>
                                     }
@@ -159,7 +159,7 @@
                                     {
                                         <div class="d-flex justify-content-start">
                                             <div class="bg-white border rounded p-2 max-width-70">
-                                                @message.Text
+                                                @message.Message
                                             </div>
                                         </div>
                                     }

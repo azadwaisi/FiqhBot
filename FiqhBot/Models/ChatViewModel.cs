@@ -16,8 +16,8 @@ namespace FiqhBot.Models
 
     public class ChatMessage
     {
-        public string Text { get; set; } = string.Empty;
-        public bool IsFromUser { get; set; }
+        public string Message { get; set; } = string.Empty;
+        public string Role { get; set; }
         public DateTime Timestamp { get; set; }
     }
 }

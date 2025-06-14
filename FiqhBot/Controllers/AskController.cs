@@ -34,26 +34,27 @@ namespace FiqhBot.Controllers
             }
 
             // اضافه کردن پیام کاربر به سشن
-            AddMessageToSession(model.Message, true);
+            AddMessageToSession(model.Message, "user");
 
+            var chatHistory = GetMessagesFromSession();
             try
             {
                 // ارسال درخواست به Google AI Studio
-                var aiResponse = await SendToGoogleAI(model.Message);
+                var aiResponse = await SendToGoogleAI(chatHistory);
 
                 // اضافه کردن پاسخ AI به سشن
-                AddMessageToSession(aiResponse, false);
+                AddMessageToSession(aiResponse, "model");
             }
             catch (Exception ex)
             {
                 // در صورت خطا، پیام خطا را اضافه کن
-                AddMessageToSession($"خطا در دریافت پاسخ: {ex.Message}", false);
+                AddMessageToSession($"خطا در دریافت پاسخ: {ex.Message}", "model");
             }
 
             return RedirectToAction("Index");
         }
 
-        private async Task<string> SendToGoogleAI(string message)
+        private async Task<string> SendToGoogleAI(List<ChatMessage> chatHistory)
         {
             var httpClient = _httpClientFactory.CreateClient();
 
@@ -71,16 +72,12 @@ namespace FiqhBot.Controllers
             // ساخت درخواست
             var requestBody = new
             {
-                contents = new[]
+                // از LINQ برای تبدیل لیست ChatMessage به فرمت مورد نیاز API استفاده می‌کنیم
+                contents = chatHistory.Select(message => new
                 {
-                    new
-                    {
-                        parts = new[]
-                        {
-                            new { text = message }
-                        }
-                    }
-                }
+                    role = message.Role,
+                    parts = new[] { new { text = message.Message } }
+                })
             };
 
             var jsonContent = JsonSerializer.Serialize(requestBody);
@@ -112,13 +109,13 @@ namespace FiqhBot.Controllers
             return JsonSerializer.Deserialize<List<ChatMessage>>(messagesJson) ?? new List<ChatMessage>();
         }
 
-        private void AddMessageToSession(string message, bool isFromUser)
+        private void AddMessageToSession(string message, string role)
         {
             var messages = GetMessagesFromSession();
             messages.Add(new ChatMessage
             {
-                Text = message,
-                IsFromUser = isFromUser,
+                Message = message,
+                Role = role,
                 Timestamp = DateTime.Now
             });
 

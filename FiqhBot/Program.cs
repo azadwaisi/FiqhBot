@@ -1,4 +1,15 @@
-﻿var builder = WebApplication.CreateBuilder(args);
+﻿using FiqhBot.Contexts.MainContext;
+using Microsoft.EntityFrameworkCore;
+
+var builder = WebApplication.CreateBuilder(args);
+
+// ۱. خواندن Connection String
+var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+
+// ۲. ثبت DbContext با فعال‌سازی پشتیبانی از Vector
+builder.Services.AddDbContext<ResourceDbContext>(options =>
+    options.UseNpgsql(connectionString,o=>o.UseVector())); // <-- این خط کلیدی و اصلاح شده است
+
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();
